@@ -24,8 +24,107 @@ pub fn object_builder(args: TokenStream, input:TokenStream) -> TokenStream {
         out
 }
 
-fn create_object(_ident:&Ident,_variants:&Punctuated<Variant,Comma>)->TokenStream{
-quote!().into()
+fn create_object(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
+    let set = variants.iter().map(|it| {
+        let type_s = &it.ident;
+        let a = format!("Nextion{}", &type_s);
+        let name_struct = Ident::new(a.as_str(), it.ident.span());
+
+        let atr =it.attrs.iter().map(|attribute|{
+           if attribute.path().is_ident("nextion") {
+                get_atr_impl(&name_struct, attribute)
+        }else{
+                quote!()
+            }
+        });
+      
+        quote!(
+            pub struct #type_s;
+            pub struct #name_struct <'l,USART> (NextionObjectDisplay<'l,#type_s,USART>);
+            impl<'l,USART> #name_struct <'l,USART>
+            where
+                USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
+            {
+                pub fn bind(device: &mut Nextion<USART>, pid: u8, cid: u8, name: &'l str)->
+                    Self
+                {
+                   Self(NextionObjectDisplay::bind(device,pid,cid,name))
+                }
+            }
+
+            impl<'l> #type_s
+            {
+                pub fn bind<USART>(device: &mut Nextion<USART>, pid: u8, cid: u8, name: &'l str)->
+                    #name_struct<'l,USART>
+                where
+                    USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
+                {
+                    #name_struct(NextionObjectDisplay::bind(device,pid,cid,name))
+                }
+            }
+            impl ObjectTypes for #type_s{}
+            
+            // impl basic
+            impl<'l, USART> NextionCom<USART> for #name_struct<'l, USART>
+            where
+                USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,{}
+
+            impl<'l,USART> ObjInfo<USART> for #name_struct<'l, USART>
+            where
+                USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
+            {
+                fn get_device(&mut self) -> &mut Nextion<USART>{
+                    self.0.get_device()
+                }
+            }
+
+            impl<'l, USART> BaseInfo for #name_struct<'l, USART>
+            where
+                USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
+            {
+                fn get_page_id(&self) -> u8 {
+                            self.0.get_page_id()
+                }
+                fn get_component_id(&self) -> u8 {
+                    self.0.get_component_id()
+                }
+                fn get_component_name(&self) -> &str {
+                    self.0.get_component_name()
+                }
+            }
+            // impl
+            #(#atr)*
+
+        )
+    });
+
+    let case = ident.to_string().to_case(convert_case::Case::Snake);
+    let mods = Ident::new(&case, ident.span());
+
+    let identifier=if let "NextionObject" = ident.to_string().as_str() {
+        Ident::new("crate", ident.span())
+    }else{
+        Ident::new("gx_rust_nextion", ident.span())
+    };
+
+    quote! {
+        pub mod #mods{
+            use #identifier::components::ObjectTypes;
+            use #identifier::components::objects::NextionObjectDisplay;
+            use #identifier::nextion::Nextion;
+            use #identifier::components::NextionVal;
+            use #identifier::components::NextionAct;
+            use #identifier::components::ObjInfo;
+            use #identifier::components::BaseInfo;
+            use #identifier::nextion::NextionCom;
+            use #identifier::components::objects::TouchHandler;
+
+            use #identifier::components::component_trait::*;
+        #(
+            #set
+        )*
+    }
+}.into()
 }
 
 fn create_object_display(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
