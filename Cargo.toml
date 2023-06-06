@@ -1,0 +1,34 @@
+[package]
+name = "gx-rust-nextion"
+authors = ["Yogi Astawan <yogi.astawan@gmail.com>"]
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+opt-level = 'z' # turn on maximum optimizations. We only have 64kB
+lto = true      # Link-time-optimizations for further size reduction
+
+[dependencies]
+embedded-hal = "^0.2.7"
+num-traits = { version = "^0.2.15", default-features = false }
+heapless = "^0.7.16"
+nextion-macro = { path = "nextion-macro", version = "0.1.0" }
+
+[dev-dependencies]
+cortex-m = { version = "^0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = "^0.7.3"
+stm32f1xx-hal = { features = [
+    "stm32f103",
+    "rt",
+    "medium",
+], version = "^0.10.0" }
+panic-halt = "^0.2.0"
+embedded-alloc = "^0.5.0"
+
+[[example]]
+name = "nextion_with_stm32f1xx"
+
+[[example]]
+name = "nextion_macro"
