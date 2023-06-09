@@ -6,9 +6,12 @@ use heapless::String;
 use nextion_macro::object_builder;
 use num_traits::{NumCast, PrimInt};
 
+#[object_builder]
 #[derive(Clone, Copy)]
 pub enum NextionObject {
+    #[nextion(tim = timer, tim, en)]
     Timer,
+    #[nextion(val)]
     Variable,
 }
 
@@ -17,7 +20,7 @@ pub enum NextionObject {
 pub enum NextionObjectDisplay {
     #[nextion(txt, font, bco, pco, pic, picc, xcen, ycen, isbr, pw)]
     Text,
-    #[nextion(txt, bco, pco, pic, picc, xcen, ycen, isbr, dir, dis, dis= scroll_text, tim, tim= scroll_text, en, spax, spay)]
+    #[nextion(txt, bco, pco, pic, picc, xcen, ycen, isbr, dir, dis, dis = scroll_text, tim, tim = scroll_text, en, spax, spay)]
     ScrollingText,
     #[nextion(
         val, bco, pco, font, pic, picc, xcen, ycen, isbr, format, spax, spay, lenth
@@ -36,7 +39,7 @@ pub enum NextionObjectDisplay {
     Hotspot,
     #[nextion(val, bco, pic, picc, pco, wid)]
     Gauge,
-    #[nextion(bco, pic, picc, gdw, gdh, dis, dis= wave_form, pco= wave_form, add, cle)]
+    #[nextion(bco, pic, picc, gdw, gdh, dis, dis = wave_form, pco = wave_form, add, cle)]
     WaveForm,
     #[nextion(val=u16, bco, pic, picc, bco1, picc1, pco, pic2, maxval, minval)] //check again
     Slider,
@@ -44,11 +47,11 @@ pub enum NextionObjectDisplay {
         val=bool, font, bco, pic, picc, bco2, pic2, picc2, pco, pco2, xcen, ycen, txt, isbr
     )]
     DualStateButton,
-    #[nextion(val=bool, bco, pco)]
+    #[nextion(val = bool, bco, pco)]
     Checkbox,
-    #[nextion(val=bool, bco, pco)]
+    #[nextion(val = bool, bco, pco)]
     Radio,
-    #[nextion(val=i32,font,bco,pco,pic,picc, xcen,ycen,isbr,spax,spay/*,ws0,ws1*/)]
+    #[nextion(val, font, bco, pco, pic, picc, xcen, ycen, isbr, spax, spay, ws0, ws1)]
     XFloat,
     TouchCap,
     #[nextion(txt, dis, bco, pco)]
