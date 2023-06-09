@@ -1,15 +1,10 @@
-
-
-
-
 use convert_case::Casing;
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
-use quote::{quote};
-use syn::{parse_macro_input, Variant, punctuated::Punctuated, token::{Comma}, Attribute, parse::{Parse, ParseStream}};
+use quote::quote;
+use syn::{parse_macro_input, Variant, punctuated::Punctuated, token::Comma, Attribute, parse::{Parse, ParseStream}};
 use syn::Token;
 use syn::ItemEnum;
-
 
 #[proc_macro_attribute]
 pub fn object_builder(args: TokenStream, input:TokenStream) -> TokenStream {
