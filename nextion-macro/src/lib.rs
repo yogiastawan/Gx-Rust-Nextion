@@ -21,9 +21,7 @@ pub fn object_builder(args: TokenStream, input:TokenStream) -> TokenStream {
 
 fn create_object(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
     let set = variants.iter().map(|it| {
-        let type_s = &it.ident;
-        let a = format!("Nextion{}", &type_s);
-        let name_struct = Ident::new(a.as_str(), it.ident.span());
+        let name_struct = &it.ident;
 
         let atr =it.attrs.iter().map(|attribute|{
            if attribute.path().is_ident("nextion") {
@@ -34,8 +32,7 @@ fn create_object(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
         });
       
         quote!(
-            pub struct #type_s;
-            pub struct #name_struct <'l,USART> (NextionObjectDisplay<'l,#type_s,USART>);
+            pub struct #name_struct <'l,USART> (NextionObjectDisplay<'l,USART>);
             impl<'l,USART> #name_struct <'l,USART>
             where
                 USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
@@ -47,17 +44,6 @@ fn create_object(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
                 }
             }
 
-            impl<'l> #type_s
-            {
-                pub fn bind<USART>(device: &mut Nextion<USART>, pid: u8, cid: u8, name: &'l str)->
-                    #name_struct<'l,USART>
-                where
-                    USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
-                {
-                    #name_struct(NextionObjectDisplay::bind(device,pid,cid,name))
-                }
-            }
-            impl ObjectTypes for #type_s{}
             
             // impl basic
             impl<'l, USART> NextionCom<USART> for #name_struct<'l, USART>
@@ -104,7 +90,6 @@ fn create_object(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
 
     quote! {
         pub mod #mods{
-            use #identifier::components::ObjectTypes;
             use #identifier::components::objects::NextionObjectDisplay;
             use #identifier::nextion::Nextion;
             use #identifier::components::NextionVal;
@@ -124,9 +109,7 @@ fn create_object(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
 
 fn create_object_display(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
     let set = variants.iter().map(|it| {
-        let type_s = &it.ident;
-        let a = format!("Nextion{}", &type_s);
-        let name_struct = Ident::new(a.as_str(), it.ident.span());
+        let name_struct = &it.ident;
 
         let atr =it.attrs.iter().map(|attribute|{
            if attribute.path().is_ident("nextion") {
@@ -137,8 +120,7 @@ fn create_object_display(ident:&Ident,variants:&Punctuated<Variant,Comma>)->Toke
         });
       
         quote!(
-            pub struct #type_s;
-            pub struct #name_struct <'l,USART> (NextionObjectDisplay<'l,#type_s,USART>);
+            pub struct #name_struct <'l,USART> (NextionObjectDisplay<'l,USART>);
             impl<'l,USART> #name_struct <'l,USART>
             where
                 USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
@@ -149,18 +131,6 @@ fn create_object_display(ident:&Ident,variants:&Punctuated<Variant,Comma>)->Toke
                    Self(NextionObjectDisplay::bind(device,pid,cid,name))
                 }
             }
-
-            impl<'l> #type_s
-            {
-                pub fn bind<USART>(device: &mut Nextion<USART>, pid: u8, cid: u8, name: &'l str)->
-                    #name_struct<'l,USART>
-                where
-                    USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
-                {
-                    #name_struct(NextionObjectDisplay::bind(device,pid,cid,name))
-                }
-            }
-            impl ObjectTypes for #type_s{}
             
             // impl basic
             impl<'l, USART> NextionCom<USART> for #name_struct<'l, USART>
@@ -226,7 +196,6 @@ fn create_object_display(ident:&Ident,variants:&Punctuated<Variant,Comma>)->Toke
 
     quote! {
         pub mod #mods{
-            use #identifier::components::ObjectTypes;
             use #identifier::components::objects::NextionObjectDisplay;
             use #identifier::nextion::Nextion;
             use #identifier::components::NextionVal;
@@ -337,7 +306,7 @@ struct NextionParser{
 impl Parse for NextionParser {
     fn parse(input: ParseStream) ->syn::Result<Self> {
 
-        // split input with `'`;
+        // split input with `,`;
         let binding = input.to_string();
         let strs:Vec<&str> =binding.split(',').collect();
 
