@@ -58,7 +58,7 @@ pub enum NextionObjectDisplay {
     QRCode,
 }
 
-pub trait ObjectTypes {}
+// pub trait ObjectTypes {}
 pub trait ObjInfo<USART>
 where
     USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,

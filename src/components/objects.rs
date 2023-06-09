@@ -1,8 +1,6 @@
-use core::marker::PhantomData;
-
 use crate::nextion::{ComError, IntoU8, Nextion, NextionCom};
 
-use super::{BaseInfo, NextionBaseObj, ObjInfo, ObjectTypes};
+use super::{BaseInfo, NextionBaseObj, ObjInfo};
 
 pub enum TextScrollDirection {
     LeftToRigth,
@@ -117,40 +115,29 @@ impl IntoU8 for TextVerticalAlignment {
     }
 }
 
-pub struct NextionObject<'l, T, USART>
-where
-    T: ObjectTypes,
-{
+pub struct NextionObject<'l, USART> {
     base: NextionBaseObj<'l>,
     device: *mut Nextion<USART>,
-    ut: PhantomData<T>,
 }
 
-impl<'l, T, USART> NextionCom<USART> for NextionObject<'l, T, USART>
-where
-    USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
-    T: ObjectTypes,
+impl<'l, USART> NextionCom<USART> for NextionObject<'l, USART> where
+    USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>
 {
 }
 
-impl<'l, USART, T> NextionObject<'l, T, USART>
+impl<'l, USART> NextionObject<'l, USART>
 where
     USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
-    T: ObjectTypes,
 {
     pub fn bind(device: &mut Nextion<USART>, pid: u8, cid: u8, name: &'l str) -> Self {
         NextionObject {
             base: NextionBaseObj::new(pid, cid, name),
             device,
-            ut: PhantomData,
         }
     }
 }
 
-impl<'l, USART, T> BaseInfo for NextionObject<'l, T, USART>
-where
-    T: ObjectTypes,
-{
+impl<'l, USART> BaseInfo for NextionObject<'l, USART> {
     fn get_page_id(&self) -> u8 {
         self.base.pid
     }
@@ -164,10 +151,9 @@ where
     }
 }
 
-impl<'l, USART, T> ObjInfo<USART> for NextionObject<'l, T, USART>
+impl<'l, USART> ObjInfo<USART> for NextionObject<'l, USART>
 where
     USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
-    T: ObjectTypes,
 {
     fn get_device(&mut self) -> &mut Nextion<USART> {
         unsafe {
@@ -189,20 +175,15 @@ pub trait TouchHandler<'l> {
     fn call_on_release(&mut self);
 }
 
-pub struct NextionObjectDisplay<'l, T, USART>
-where
-    T: ObjectTypes,
-{
+pub struct NextionObjectDisplay<'l, USART> {
     base: NextionBaseObj<'l>,
     device: *mut Nextion<USART>,
     on_click: Option<&'l mut dyn FnMut()>,
     on_release: Option<&'l mut dyn FnMut()>,
-    ut: PhantomData<T>,
 }
 
-impl<'l, T, USART> NextionObjectDisplay<'l, T, USART>
+impl<'l, USART> NextionObjectDisplay<'l, USART>
 where
-    T: ObjectTypes,
     USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
 {
     pub fn bind(device: &mut Nextion<USART>, pid: u8, cid: u8, name: &'l str) -> Self {
@@ -211,14 +192,12 @@ where
             device,
             on_click: None,
             on_release: None,
-            ut: PhantomData,
         }
     }
 }
 
-impl<'l, T, USART> TouchHandler<'l> for NextionObjectDisplay<'l, T, USART>
+impl<'l, USART> TouchHandler<'l> for NextionObjectDisplay<'l, USART>
 where
-    T: ObjectTypes,
     USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
 {
     fn set_on_click(&mut self, handler: &'l mut dyn FnMut()) {
@@ -248,17 +227,14 @@ where
     }
 }
 
-impl<'l, T, USART> NextionCom<USART> for NextionObjectDisplay<'l, T, USART>
-where
-    USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
-    T: ObjectTypes,
+impl<'l, USART> NextionCom<USART> for NextionObjectDisplay<'l, USART> where
+    USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>
 {
 }
 
-impl<'l, T, USART> BaseInfo for NextionObjectDisplay<'l, T, USART>
+impl<'l, USART> BaseInfo for NextionObjectDisplay<'l, USART>
 where
     USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
-    T: ObjectTypes,
 {
     fn get_page_id(&self) -> u8 {
         self.base.pid
@@ -273,10 +249,9 @@ where
     }
 }
 
-impl<'l, T, USART> ObjInfo<USART> for NextionObjectDisplay<'l, T, USART>
+impl<'l, USART> ObjInfo<USART> for NextionObjectDisplay<'l, USART>
 where
     USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
-    T: ObjectTypes,
 {
     fn get_device(&mut self) -> &mut Nextion<USART> {
         unsafe {
@@ -290,22 +265,3 @@ where
         }
     }
 }
-
-// pub struct NameStruct<USART>;
-// impl<'l, USART> NameStruct<USART>
-// where
-//     USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
-// {
-//     pub fn bind(
-//         device: &'l mut Nextion<USART>,
-//         pid: u8,
-//         cid: u8,
-//         name: &'l str,
-//     ) -> NextionObjectDisplay<'l, NameStruct<USART>, USART> where {
-//         NextionObjectDisplay::bind(device, pid, cid, name)
-//     }
-// }
-// impl ObjectTypes for NameStruct {}
-// // pub type TypeS<'l, USART> = NextionObjectDisplay<'l, NameStruct, USART>;
-// struct name_struct;
-// pub type type_s<'l,USART> =NextionObjectDisplay<'l,name_struct,USART>;
