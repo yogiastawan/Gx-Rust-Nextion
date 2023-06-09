@@ -1772,3 +1772,105 @@ where
         Ok(buff)
     }
 }
+
+pub trait NextionWs0<USART>: NextionCom<USART> + BaseInfo + ObjInfo<USART>
+where
+    USART: embedded_hal::blocking::serial::Write<u8> + embedded_hal::serial::Read<u8>,
+{
+    fn set_ws0(&mut self, val: u8) -> Result<(), ComError>
+    where
+        Self: Sized,
+    {
+        if val > 10 {
+            return Err(ComError::InvalidDataRange);
+        }
+        let name = self.get_component_name();
+        let mut cmd = String::<24>::new();
+        match write!(cmd, "{}.ws0={}", name, val) {
+            Ok(_) => {}
+            Err(_) => return Err(ComError::FailedCreateCommand),
+        };
+
+        self.send_cmd(cmd.as_bytes())
+    }
+
+    fn get_ws0(&mut self,) -> Result<u8, ComError>
+    where
+        USART: embedded_hal::blocking::serial::Write<u8> + embedded_hal::serial::Read<u8>,
+        Self: Sized,
+    {
+        let name = self.get_component_name();
+        let mut cmd = String::<24>::new();
+        match write!(cmd, "get {}.ws0", name) {
+            Ok(_) => {}
+            Err(_) => return Err(ComError::FailedCreateCommand),
+        };
+
+        match self.send_cmd(cmd.as_bytes()) {
+            Ok(_) => (),
+            Err(err) => return Err(err),
+        };
+
+        let mut buff = match NumCast::from(0) {
+            Some(x) => x,
+            None => return Err(ComError::FailedCreateNumberBuffer),
+        };
+
+        match self.get_number::<u8>(&mut buff) {
+            Ok(_) => (),
+            Err(err) => return Err(err),
+        };
+        Ok(buff)
+    }
+}
+
+pub trait NextionWs1<USART>: NextionCom<USART> + BaseInfo + ObjInfo<USART>
+where
+    USART: embedded_hal::blocking::serial::Write<u8> + embedded_hal::serial::Read<u8>,
+{
+    fn set_ws1(&mut self, val: u8) -> Result<(), ComError>
+    where
+        Self: Sized,
+    {
+        if val > 8 {
+            return Err(ComError::InvalidDataRange);
+        }
+        let name = self.get_component_name();
+        let mut cmd = String::<24>::new();
+        match write!(cmd, "{}.ws1={}", name, val) {
+            Ok(_) => {}
+            Err(_) => return Err(ComError::FailedCreateCommand),
+        };
+
+        self.send_cmd(cmd.as_bytes())
+    }
+
+    fn get_ws1(&mut self,) -> Result<u8, ComError>
+    where
+        USART: embedded_hal::blocking::serial::Write<u8> + embedded_hal::serial::Read<u8>,
+        Self: Sized,
+    {
+        let name = self.get_component_name();
+        let mut cmd = String::<24>::new();
+        match write!(cmd, "get {}.ws1", name) {
+            Ok(_) => {}
+            Err(_) => return Err(ComError::FailedCreateCommand),
+        };
+
+        match self.send_cmd(cmd.as_bytes()) {
+            Ok(_) => (),
+            Err(err) => return Err(err),
+        };
+
+        let mut buff = match NumCast::from(0) {
+            Some(x) => x,
+            None => return Err(ComError::FailedCreateNumberBuffer),
+        };
+
+        match self.get_number::<u8>(&mut buff) {
+            Ok(_) => (),
+            Err(err) => return Err(err),
+        };
+        Ok(buff)
+    }
+}
