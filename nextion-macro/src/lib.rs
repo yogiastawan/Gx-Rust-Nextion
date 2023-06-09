@@ -32,7 +32,7 @@ fn create_object(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
         });
       
         quote!(
-            pub struct #name_struct <'l,USART> (NextionObjectDisplay<'l,USART>);
+            pub struct #name_struct <'l,USART> (NextionObject<'l,USART>);
             impl<'l,USART> #name_struct <'l,USART>
             where
                 USART: embedded_hal::serial::Read<u8> + embedded_hal::blocking::serial::Write<u8>,
@@ -40,7 +40,7 @@ fn create_object(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
                 pub fn bind(device: &mut Nextion<USART>, pid: u8, cid: u8, name: &'l str)->
                     Self
                 {
-                   Self(NextionObjectDisplay::bind(device,pid,cid,name))
+                   Self(NextionObject::bind(device,pid,cid,name))
                 }
             }
 
@@ -90,7 +90,7 @@ fn create_object(ident:&Ident,variants:&Punctuated<Variant,Comma>)->TokenStream{
 
     quote! {
         pub mod #mods{
-            use #identifier::components::objects::NextionObjectDisplay;
+            use #identifier::components::objects::NextionObject;
             use #identifier::nextion::Nextion;
             use #identifier::components::NextionVal;
             use #identifier::components::NextionAct;
