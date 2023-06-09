@@ -1,13 +1,15 @@
 #![no_std]
 #![no_main]
 
-use advance_nextion::{FileChooser, NextionFileChooser, NextionVideoPlayer, VideoPlayer};
+use advance_nextion::{ FileChooser, VideoPlayer};
 use gx_rust_nextion::{components::{
-    nextion_object_display::{Button, NextionButton}, objects::TouchHandler, NextionValues,
+    nextion_object_display::{Button}, objects::TouchHandler,
 }, nextion::Nextion};
 
+use gx_rust_nextion::components::NextionVal;
+
 use cortex_m_rt::entry;
-use nextion_macro::object_display_builder;
+use nextion_macro::object_builder;
 use panic_halt as _;
 use stm32f1xx_hal::{
     pac,
@@ -15,11 +17,12 @@ use stm32f1xx_hal::{
     serial::{Config, Serial},
 };
 // Create new Nextion object type
-#[object_display_builder()]
+#[object_builder(display)]
 #[derive(Clone, Copy)]
 enum AdvanceNextion {
-    #[nextion]
+    #[nextion(txt,val)]
     FileChooser,
+    #[nextion(val)]
     VideoPlayer,
 }
 
@@ -59,10 +62,10 @@ fn main() -> ! {
     );
     let mut nex = Nextion::new(&mut serial);
 
-    let mut file_chooser = NextionFileChooser::bind(&mut nex, 0, 0, "name");
-    let mut video_player = NextionVideoPlayer::bind(&mut nex, 0, 0, "name");
+    let mut file_chooser = FileChooser::bind(&mut nex, 0, 0, "name");
+    let mut video_player = VideoPlayer::bind(&mut nex, 0, 0, "name");
 
-    let mut button0 = NextionButton::bind(&mut nex, 0, 0, "name");
+    let mut button0 = Button::bind(&mut nex, 0, 0, "name");
     let mut b = &mut || {
         file_chooser.set_value(6);
     };
@@ -80,7 +83,7 @@ fn main() -> ! {
         panic!("HUUHUH");
     });
 
-    // f.set_value(100);
+    f.set_value(100);
     // v.set_on_release(&mut||{});
     loop {}
 }

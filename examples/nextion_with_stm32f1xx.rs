@@ -2,10 +2,8 @@
 #![no_main]
 
 use cortex_m_rt::entry;
-use gx_rust_nextion::components::nextion_object_display::NextionText;
-use gx_rust_nextion::components::{BaseInfo, NextionBaseObj};
-use gx_rust_nextion::nextion::{Nextion, NextionCom};
-use nextion_macro::object_builder;
+use gx_rust_nextion::components::nextion_object_display::Text;
+use gx_rust_nextion::nextion::Nextion;
 use panic_halt as _;
 use stm32f1xx_hal::{
     pac,
@@ -13,7 +11,7 @@ use stm32f1xx_hal::{
     serial::{Config, Serial},
 };
 
-use gx_rust_nextion::components::component_trait::{NextionFont, NextionTim, NextionTxt};
+use gx_rust_nextion::components::component_trait::{NextionFont, NextionTxt};
 
 #[entry]
 fn main() -> ! {
@@ -51,7 +49,7 @@ fn main() -> ! {
     );
     let mut nex = Nextion::new(&mut serial);
 
-    let mut a = NextionText::bind(&mut nex, 0, 0, "name");
+    let mut a = Text::bind(&mut nex, 0, 0, "name");
     a.set_txt("sss");
 
     a.set_font(1);
