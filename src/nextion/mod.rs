@@ -2,7 +2,8 @@ use embedded_hal::blocking::serial as blocking;
 use num_traits::{NumCast, PrimInt};
 
 use crate::components::ObjInfo;
-// #[repr(u8)]
+
+
 #[derive(PartialEq)]
 pub enum NextionCmd {
     CmdEnd = 0xFF,
@@ -45,26 +46,6 @@ pub trait IntoU8 {
 impl IntoU8 for NextionCmd {
     fn into_u8(self) -> u8 {
         self as u8
-        // match self {
-        //     NextionCmd::CmdEnd => 0xFF,
-        //     NextionCmd::CmdFinishOk => 0x01,
-        //     NextionCmd::CmdEventLaunched => 0x88,
-        //     NextionCmd::CmdEventUpgraded => 0x89,
-        //     NextionCmd::CmdEventTouchHead => 0x65,
-        //     NextionCmd::CmdEventPositionHead => 0x67,
-        //     NextionCmd::CmdEventSleepPositionHead => 0x68,
-        //     NextionCmd::CmdCurrentPageIdHead => 0x66,
-        //     NextionCmd::CmdStringHead => 0x70,
-        //     NextionCmd::CmdNumberHead => 0x71,
-        //     NextionCmd::CmdInvalidCmd => 0x00,
-        //     NextionCmd::CmdInvalidComponentId => 0x02,
-        //     NextionCmd::CmdInvalidPageId => 0x03,
-        //     NextionCmd::CmdInvalidPictureId => 0x04,
-        //     NextionCmd::CmdInvalidFontId => 0x05,
-        //     NextionCmd::CmdInvalidBaud => 0x11,
-        //     NextionCmd::CmdInvalidVariable => 0x1A,
-        //     NextionCmd::CmdInvalidOperation => 0x1B,
-        // }
     }
 }
 
@@ -161,7 +142,7 @@ where
             let val = (buffer[3] as i32) << 24
                 | (buffer[2] as i32) << 16
                 | (buffer[1] as i32) << 8
-                | (buffer[3] as i32);
+                | (buffer[0] as i32);
             *buff = match NumCast::from(val) {
                 Some(x) => x,
                 None => return Err(ComError::IvalidGetDataNumber),
