@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceFolder}/target/thumbv7m-none-eabi/debug/examples/nextion_with_stm32f1xx",
+            "name": "example: stm32f1xx",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "searchDir": [],
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "none",
+            "preLaunchTask": "example: nextion_with_stm32f1xx"
+        }
+    ]
+}
