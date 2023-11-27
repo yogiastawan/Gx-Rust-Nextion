@@ -3,7 +3,7 @@
 
 use advance_nextion::{ FileChooser, VideoPlayer};
 use gx_rust_nextion::{components::{
-    nextion_object_display::{Button}, objects::TouchHandler,
+    nextion_object_display::Button, objects::TouchHandler,
 }, nextion::Nextion};
 
 use gx_rust_nextion::components::NextionVal;
@@ -60,7 +60,7 @@ fn main() -> ! {
         Config::default().baudrate(9600.bps()),
         &clocks,
     );
-    let mut nex = Nextion::new(&mut serial);
+    let mut nex = Nextion::new(serial);
 
     let mut file_chooser = FileChooser::bind(&mut nex, 0, 0, "name");
     let mut video_player = VideoPlayer::bind(&mut nex, 0, 0, "name");

@@ -1,3 +1,5 @@
+use core::cell::RefCell;
+
 use embedded_hal::blocking::serial as blocking;
 use num_traits::{NumCast, PrimInt};
 
@@ -77,16 +79,16 @@ where
         Self: Sized,
     {
         let device = self.get_device();
-        match device.get_peripheral().bwrite_all(cmd) {
+        match device.get_peripheral().borrow_mut().bwrite_all(cmd) {
             Ok(_) => {}
             Err(_) => return Err(ComError::FailedWrite),
         };
         let cmd: [u8; 3] = [0xFF, 0xFF, 0xFF];
-        match device.get_peripheral().bwrite_all(&cmd) {
+        match device.get_peripheral().borrow_mut().bwrite_all(&cmd) {
             Ok(_) => {}
             Err(_) => return Err(ComError::FailedWrite),
         };
-        match device.get_peripheral().bflush() {
+        match device.get_peripheral().borrow_mut().bflush() {
             Ok(_) => (),
             Err(_) => return Err(ComError::FailedSendCmd),
         };
@@ -99,7 +101,7 @@ where
     {
         let device = self.get_device();
         //Get string head
-        let mut len = match device.get_peripheral().read() {
+        let mut len = match device.get_peripheral().borrow_mut().read() {
             Ok(word) => {
                 if NextionCmd::CmdStringHead.into_u8() == word {
                     0u8
@@ -111,7 +113,7 @@ where
         };
         let mut end = 0u8;
         for buf in buff {
-            *buf = match device.get_peripheral().read() {
+            *buf = match device.get_peripheral().borrow_mut().read() {
                 Ok(word) => {
                     if NextionCmd::CmdEnd.into_u8() == word {
                         end += 1;
@@ -137,7 +139,7 @@ where
     {
         let device = self.get_device();
         //Get number head
-        match device.get_peripheral().read() {
+        match device.get_peripheral().borrow_mut().read() {
             Ok(word) => {
                 if NextionCmd::CmdNumberHead.into_u8() != word {
                     return Err(ComError::IvalidGetDataNumber);
@@ -148,7 +150,7 @@ where
 
         let mut buffer = [0u8; 7];
         for buf in &mut buffer {
-            *buf = match device.get_peripheral().read() {
+            *buf = match device.get_peripheral().borrow_mut().read() {
                 Ok(val) => val,
                 Err(_) => return Err(ComError::FailedRead),
             }
@@ -175,7 +177,7 @@ where
 
 #[derive(Clone)]
 pub struct Nextion<USART> {
-    usart: *mut USART,
+    usart: RefCell<USART>,
 }
 
 impl<USART> Nextion<USART>
@@ -183,18 +185,16 @@ where
     USART: embedded_hal::serial::Read<u8> + blocking::Write<u8>,
 {
     /// Creates a new [`Nextion<X>`].
-    pub fn new(peripheral: &mut USART) -> Self {
-        Nextion { usart: peripheral }
+    pub fn new(peripheral: USART) -> Self {
+        Nextion {
+            usart: RefCell::new(peripheral),
+        }
     }
 
     /// Returns a reference to the get peripheral of this [`Nextion<X>`].
-    pub fn get_peripheral(&mut self) -> &mut USART {
+    pub fn get_peripheral(&mut self) -> &RefCell<USART> {
         {
-            let this = unsafe { self.usart.as_mut() };
-            match this {
-                Some(val) => val,
-                None => panic!("called `Option::unwrap()` on a `None` value"),
-            }
+            &self.usart
         }
     }
 }
@@ -204,16 +204,16 @@ where
     USART: embedded_hal::serial::Read<u8> + blocking::Write<u8>,
 {
     pub fn send_cmd(&mut self, cmd: &[u8]) -> Result<(), ComError> {
-        match self.get_peripheral().bwrite_all(cmd) {
+        match self.get_peripheral().borrow_mut().bwrite_all(cmd) {
             Ok(_) => {}
             Err(_) => return Err(ComError::FailedWrite),
         };
         let cmd: [u8; 3] = [0xFF, 0xFF, 0xFF];
-        match self.get_peripheral().bwrite_all(&cmd) {
+        match self.get_peripheral().borrow_mut().bwrite_all(&cmd) {
             Ok(_) => {}
             Err(_) => return Err(ComError::FailedWrite),
         };
-        match self.get_peripheral().bflush() {
+        match self.get_peripheral().borrow_mut().bflush() {
             Ok(_) => (),
             Err(_) => return Err(ComError::FailedSendCmd),
         };
@@ -222,7 +222,7 @@ where
 
     pub fn get_str(&mut self, buff: &mut [u8]) -> Result<u16, ComError> {
         //Get string head
-        let mut len = match self.get_peripheral().read() {
+        let mut len = match self.get_peripheral().borrow_mut().read() {
             Ok(word) => {
                 if NextionCmd::CmdStringHead.into_u8() == word {
                     0u16
@@ -234,7 +234,7 @@ where
         };
         let mut end = 0u8;
         for buf in buff {
-            *buf = match self.get_peripheral().read() {
+            *buf = match self.get_peripheral().borrow_mut().read() {
                 Ok(word) => {
                     if NextionCmd::CmdEnd.into_u8() == word {
                         end += 1;
@@ -258,7 +258,7 @@ where
         T: PrimInt,
     {
         //Get number head
-        match self.get_peripheral().read() {
+        match self.get_peripheral().borrow_mut().read() {
             Ok(word) => {
                 if NextionCmd::CmdNumberHead.into_u8() != word {
                     return Err(ComError::IvalidGetDataNumber);
@@ -269,7 +269,7 @@ where
 
         let mut buffer = [0u8; 7];
         for buf in &mut buffer {
-            *buf = match self.get_peripheral().read() {
+            *buf = match self.get_peripheral().borrow_mut().read() {
                 Ok(val) => val,
                 Err(_) => return Err(ComError::FailedRead),
             }

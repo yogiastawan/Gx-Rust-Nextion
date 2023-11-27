@@ -47,7 +47,7 @@ fn main() -> ! {
         Config::default().baudrate(9600.bps()),
         &clocks,
     );
-    let mut nex = Nextion::new(&mut serial);
+    let mut nex = Nextion::new(serial);
 
     let mut a = Text::bind(&mut nex, 0, 0, "name");
     a.set_txt("sss");
